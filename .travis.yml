@@ -1,0 +1,22 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t suren2787/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true suren2787/react-test npm test
+
+after_success:
+  - docker build -t suren2787/multi-client ./client
+  - docker build -t suren2787/multi-nginx ./nginx
+  - docker build -t suren2787/multi-server ./server
+  - docker build -t suren2787/multi-worker ./worker
+  #login to docker cli
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin 
+  #push to dockerhub
+  - docker push suren2787/multi-client
+  - docker push suren2787/multi-nginx
+  - docker push suren2787/multi-server
+  - docker push suren2787/multi-worker
